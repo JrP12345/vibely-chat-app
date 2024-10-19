@@ -8,7 +8,11 @@ export const userRegister = async (req, res) => {
     if (!username || !email || !password) {
       return res.status(400).json({ message: "All fields are Compulsory" });
     }
-
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long" });
+    }
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -66,4 +70,28 @@ export const userProfile = async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
   res.status(200).json(user);
+};
+
+export const checkAuth = (req, res) => {
+  if (req.cookies.token) {
+    // Token exists; user is authenticated
+    res.status(200).json({ isAuthenticated: true });
+  } else {
+    // Token does not exist; user is not authenticated
+    res.status(200).json({ isAuthenticated: false });
+  }
+};
+export const userLogout = (req, res) => {
+  res.clearCookie("token");
+  return res.status(200).json({ message: "Logout successful" });
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const userId = req.user;
+    const users = await User.find({ _id: { $ne: userId } }); // Fetch all users with their usernames
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching users" });
+  }
 };

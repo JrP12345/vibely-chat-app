@@ -4,7 +4,7 @@ import { User } from "../models/user.js";
 export const initSockets = (io) => {
   io.on("connection", (socket) => {
     console.log("User Connected", socket.id);
-    const USERID = "";
+    let USERID = "";
     socket.on("userJoin", async (userId) => {
       USERID = userId;
       await User.findByIdAndUpdate(userId, { status: "online" });
@@ -18,46 +18,78 @@ export const initSockets = (io) => {
 
     socket.on("joinPrivateChat", async ({ userId1, userId2 }) => {
       const roomId = createPrivateRoomId(userId1, userId2);
-      socket.join(roomId);
 
+      // Join only if not already joined
+      socket.join(roomId);
       const chat = await Chat.findOne({
         userIds: { $all: [userId1, userId2] },
       });
       if (chat) {
         socket.emit("loadChatHistory", chat.chatHistory); // Send chat history to client
       }
+
       console.log(`User ${socket.id} joined private room ${roomId}`);
     });
 
     // Private chat: Send message and save to DB
-    socket.on("sendPrivateMessage", async ({ userId1, userId2, message }) => {
-      const roomId = createPrivateRoomId(userId1, userId2);
+    socket.on(
+      "sendPrivateMessage",
+      async (
+        { senderId: userId1, receiverId: userId2, messageContent: message },
+        callback
+      ) => {
+        const roomId = createPrivateRoomId(userId1, userId2);
 
-      // Save message in DB
-      const chat = await Chat.findOneAndUpdate(
-        { userIds: { $all: [userId1, userId2] } },
-        {
-          $push: {
-            chatHistory: {
-              senderId: userId1,
-              messageContent: message,
-              timestamp: new Date(),
-              status: "sent",
-            },
-          },
-        },
-        { new: true, upsert: true } // Create chat if it doesn't exist
-      );
+        // Log the incoming message data for debugging
+        console.log("Incoming Message Data:", { userId1, userId2, message });
 
-      // Emit message to both users in the chat
-      io.to(roomId).emit("receiveMessage", {
-        senderId: userId1,
-        receiverId: userId2,
-        content: message,
-        timestamp: new Date(),
-      });
-      console.log(`Message from ${userId1} to ${userId2} in room ${roomId}`);
-    });
+        try {
+          // Check for existing chat
+          const existingChat = await Chat.findOne({
+            userIds: { $all: [userId1, userId2] },
+          });
+
+          const newMessage = {
+            senderId: userId1,
+            messageContent: message,
+            timestamp: new Date(),
+            status: "sent",
+          };
+
+          if (existingChat) {
+            // If chat exists, push the new message into the chatHistory
+            existingChat.chatHistory.push(newMessage);
+            await existingChat.save();
+          } else {
+            // If chat does not exist, create a new chat
+            const newChat = new Chat({
+              userIds: [userId1, userId2],
+              chatHistory: [newMessage],
+            });
+            await newChat.save();
+          }
+
+          // Emit message to both users in the chat
+          io.to(roomId).emit("receiveMessage", {
+            senderId: userId1,
+            receiverId: userId2,
+            messageContent: message, // Match field name
+            timestamp: new Date(),
+          });
+
+          console.log(
+            `Message from ${userId1} to ${userId2} in room ${roomId}`
+          );
+
+          // Acknowledge success back to the sender
+          if (callback) callback({ status: "success" });
+        } catch (error) {
+          console.error("Error sending private message:", error);
+          if (callback) callback({ status: "error" });
+        }
+      }
+    );
+
     socket.on("joinGroupChat", async ({ groupId, userId }) => {
       socket.join(groupId);
 
@@ -105,7 +137,7 @@ export const initSockets = (io) => {
     socket.on("groupTyping", ({ groupId, userId }) => {
       socket.to(groupId).emit("userTyping", { userId }); // Notify all other users in the group
     });
-    socket.on("disconnection", async () => {
+    socket.on("disconnect", async () => {
       if (USERID) {
         await User.findByIdAndUpdate(USERID, {
           status: "offline",
