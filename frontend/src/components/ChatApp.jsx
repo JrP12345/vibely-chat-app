@@ -64,7 +64,7 @@ const ChatComponent = () => {
   const handleLogout = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/user/logout",
+        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/logout",
         {},
         { withCredentials: true }
       );

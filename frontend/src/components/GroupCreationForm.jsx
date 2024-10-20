@@ -4,7 +4,7 @@ import io from "socket.io-client";
 import { useAuth } from "../context/AuthContext";
 
 // Assuming your socket server is running on this address
-const socket = io("http://localhost:4000");
+const socket = io("https://vibely-chat-app-ytuu.onrender.com/auth");
 
 const GroupCreationForm = ({ users, onSubmit, onClose }) => {
   const [groupName, setGroupName] = useState("");
@@ -31,7 +31,7 @@ const GroupCreationForm = ({ users, onSubmit, onClose }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/user/createGroup",
+        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/createGroup",
         {
           groupName, // Group name to be sent to the API
           members, // Array of selected members (user IDs)

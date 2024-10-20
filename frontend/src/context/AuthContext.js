@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        "http://localhost:4000/api/user/userProfile",
+        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/userProfile",
         {
           withCredentials: true,
         }
@@ -43,9 +43,12 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("http://localhost:4000/api/user/check", {
-        withCredentials: true,
-      });
+      const { data } = await axios.get(
+        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/check",
+        {
+          withCredentials: true,
+        }
+      );
       if (data.isAuthenticated) {
         setIsAuthenticate(true);
         fetchUserDetails(); // Fetch user details if authenticated
@@ -63,9 +66,12 @@ export const AuthProvider = ({ children }) => {
   const fetchAllUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("http://localhost:4000/api/user/users", {
-        withCredentials: true,
-      });
+      const { data } = await axios.get(
+        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/users",
+        {
+          withCredentials: true,
+        }
+      );
       setUsers(data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -79,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.put(
-        "http://localhost:4000/api/user/update",
+        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/update",
         { username: updatedUsername },
         { withCredentials: true }
       );
@@ -96,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        "http://localhost:4000/api/user/groups",
+        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/groups",
         {
           withCredentials: true,
         }

@@ -20,7 +20,7 @@ const _dirname = path.resolve();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://vibely-chat-app-ytuu.onrender.com",
     credentials: true,
   })
 );
