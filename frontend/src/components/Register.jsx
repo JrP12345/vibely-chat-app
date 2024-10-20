@@ -49,7 +49,7 @@ const Register = ({ setPageToggle }) => {
   return (
     <div className="p-5 bg-zinc-950">
       <div className="flex items-center justify-center mb-4">
-        <h1 className="text-4xl text-green-400 mr-2">Velocity</h1>
+        <h1 className="text-4xl text-green-400 mr-2">VIBELY</h1>
         <img src="/msg-gif-3-logo.gif" alt="Logo" className="w-12 h-12 " />
       </div>
 

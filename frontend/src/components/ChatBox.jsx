@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IoSend } from "react-icons/io5";
-import io from "socket.io-client";
+import io from "socket.io-client"; // Import should be at the top level
 import { useAuth } from "../context/AuthContext";
 
 const socket = io("http://localhost:4000"); // Update to your server's URL
@@ -9,37 +9,59 @@ const ChatBox = ({ currentChat }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const { userId } = useAuth();
-
   const messagesEndRef = useRef(null); // Ref for scrolling
 
   useEffect(() => {
     if (currentChat && userId) {
-      const otherUserId = currentChat._id !== userId ? currentChat._id : null;
+      setMessages([]); // Clear messages when switching chats
 
-      if (otherUserId) {
-        setMessages([]);
-        socket.emit("joinPrivateChat", {
-          userId1: userId,
-          userId2: otherUserId,
-        });
+      // Check if it's a group chat or private chat
+      if (currentChat.isGroupChat) {
+        // Group chat logic
+        socket.emit("joinGroupChat", { groupId: currentChat._id, userId });
 
-        socket.on("receiveMessage", (data) => {
+        socket.on("receiveGroupMessage", (data) => {
           setMessages((prevMessages) => [...prevMessages, data]);
         });
 
-        socket.on("loadChatHistory", (chatHistory) => {
+        socket.on("loadGroupChatHistory", (chatHistory) => {
           setMessages(chatHistory);
         });
+      } else {
+        // Private chat logic
+        const otherUserId = currentChat._id !== userId ? currentChat._id : null;
 
-        socket.on("error", (error) => {
-          console.error("Socket error:", error);
-        });
+        if (otherUserId) {
+          socket.emit("joinPrivateChat", {
+            userId1: userId,
+            userId2: otherUserId,
+          });
+
+          socket.on("receiveMessage", (data) => {
+            setMessages((prevMessages) => [...prevMessages, data]);
+          });
+
+          socket.on("loadChatHistory", (chatHistory) => {
+            setMessages(chatHistory);
+          });
+        } else {
+          console.error("No valid other user found in the chat");
+        }
       }
+
+      socket.on("error", (error) => {
+        console.error("Socket error:", error);
+      });
+    } else {
+      console.error("No current chat or user ID found");
     }
 
     return () => {
+      // Clean up all listeners
       socket.off("receiveMessage");
       socket.off("loadChatHistory");
+      socket.off("receiveGroupMessage");
+      socket.off("loadGroupChatHistory");
       socket.off("error");
     };
   }, [currentChat, userId]);
@@ -53,39 +75,31 @@ const ChatBox = ({ currentChat }) => {
     scrollToBottom(); // Scroll when messages change
   }, [messages]);
 
+  const handleInputChange = (e) => {
+    setMessage(e.target.value);
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
 
     if (message.trim()) {
       const newMessage = {
         senderId: userId,
-        receiverId: currentChat._id,
         messageContent: message,
         timestamp: new Date().toISOString(),
         status: "sent", // Initial status
       };
 
-      socket.emit("sendPrivateMessage", newMessage, (response) => {
-        if (response.status === "success") {
-          setMessages((prevMessages) => {
-            const updatedMessages = [...prevMessages];
-            const index = updatedMessages.findIndex(
-              (msg) => msg.timestamp === newMessage.timestamp
-            );
-            if (index !== -1) {
-              updatedMessages[index].status = "delivered"; // Update status to delivered
-            }
-            return updatedMessages;
-          });
-        } else {
-          console.error("Message failed to send");
-          setMessages((prevMessages) =>
-            prevMessages.filter((msg) => msg.timestamp !== newMessage.timestamp)
-          );
-        }
-      });
+      if (currentChat.isGroupChat) {
+        newMessage.groupId = currentChat._id; // Include groupId for group messages
+        socket.emit("sendGroupMessage", newMessage);
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      } else {
+        newMessage.receiverId = currentChat._id; // For private messages
+        socket.emit("sendPrivateMessage", newMessage);
+      }
 
-      setMessage("");
+      setMessage(""); // Clear the input field after sending
     }
   };
 
@@ -106,7 +120,7 @@ const ChatBox = ({ currentChat }) => {
             key={msg.timestamp}
             className={`my-2 flex ${
               msg.senderId === userId ? "justify-end" : "justify-start"
-            } animate-fadeIn`} // Apply fade-in animation
+            }`}
           >
             <div
               className={`inline-block p-3 rounded-lg shadow-md transition duration-300 ease-in-out ${
@@ -115,6 +129,11 @@ const ChatBox = ({ currentChat }) => {
                   : "bg-gray-700 text-gray-300"
               }`}
             >
+              {currentChat.isGroupChat && (
+                <div className="font-bold text-sm text-gray-400 mb-1">
+                  {msg.senderId === userId ? "You" : msg.username}
+                </div>
+              )}
               {msg.messageContent}
               <small
                 className={`text-gray-400 text-sm mt-1 ml-2 ${
@@ -136,7 +155,7 @@ const ChatBox = ({ currentChat }) => {
         <input
           type="text"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={handleInputChange}
           className="flex-1 p-2 bg-gray-700 text-gray-300 border-none rounded-sm focus:outline-none"
           placeholder="Type your message..."
         />

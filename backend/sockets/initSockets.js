@@ -91,52 +91,75 @@ export const initSockets = (io) => {
     );
 
     socket.on("joinGroupChat", async ({ groupId, userId }) => {
-      socket.join(groupId);
+      const groupChat = await Chat.findById(groupId);
 
-      // Find or create group chat
-      const groupChat = await Chat.findOne({ _id: groupId, isGroupChat: true });
-
-      if (groupChat) {
-        socket.emit("loadGroupChatHistory", groupChat.chatHistory); // Send chat history to client
+      if (!groupChat) {
+        return socket.emit("error", { message: "Group chat not found" });
       }
 
-      console.log(`User ${userId} joined group chat ${groupId}`);
-    });
+      if (!groupChat.userIds.includes(userId)) {
+        return socket.emit("error", {
+          message: "You are not a member of this group",
+        });
+      }
 
-    socket.on("sendGroupMessage", async ({ groupId, senderId, message }) => {
-      // Save the group message in the database
-      const groupChat = await Chat.findOneAndUpdate(
-        { _id: groupId, isGroupChat: true },
-        {
-          $push: {
-            chatHistory: {
-              senderId: senderId,
-              messageContent: message,
-              timestamp: new Date(),
-              status: "sent",
-            },
-          },
-        },
-        { new: true }
+      socket.join(groupId);
+      console.log(`${userId} joined the group chat: ${groupId}`);
+      const chatHistoryWithUsernames = await Promise.all(
+        groupChat.chatHistory.map(async (message) => {
+          const sender = await User.findById(message.senderId);
+          return {
+            ...message._doc, // Keep the existing message fields
+            username: sender ? sender.username : "Unknown", // Add the username
+          };
+        })
       );
-
-      // Emit the message to all users in the group
-      io.to(groupId).emit("receiveGroupMessage", {
-        senderId,
-        content: message,
-        timestamp: new Date(),
-      });
-      console.log(`Message from ${senderId} to group ${groupId}`);
+      // Emit the chat history for the user when they join
+      socket.emit("loadGroupChatHistory", chatHistoryWithUsernames);
     });
 
-    socket.on("typing", ({ userId1, userId2 }) => {
-      const roomId = createPrivateRoomId(userId1, userId2);
-      socket.to(roomId).emit("userTyping", { userId: userId1 });
+    socket.on("sendGroupMessage", async (message) => {
+      try {
+        const { groupId, senderId, messageContent, timestamp } = message;
+        const groupChat = await Chat.findById(groupId);
+
+        if (!groupChat) {
+          // Emit an error event to the client
+          return socket.emit("error", {
+            status: "error",
+            message: "Group chat not found",
+          });
+        }
+
+        // Add the new message to the chat history
+        groupChat.chatHistory.push({
+          senderId,
+          messageContent,
+          timestamp,
+        });
+
+        await groupChat.save();
+        const sender = await User.findById(senderId);
+        if (!sender) {
+          return socket.emit("error", { message: "User not found" });
+        }
+        // Broadcast the message to all members of the group
+        socket.to(groupId).emit("receiveGroupMessage", {
+          senderId,
+          username: sender.username,
+          messageContent,
+          timestamp,
+        });
+      } catch (error) {
+        console.error("Error sending group message:", error);
+        // Emit an error event to the client
+        socket.emit("error", {
+          status: "error",
+          message: "Failed to send message",
+        });
+      }
     });
-    // Typing notification for group chats
-    socket.on("groupTyping", ({ groupId, userId }) => {
-      socket.to(groupId).emit("userTyping", { userId }); // Notify all other users in the group
-    });
+
     socket.on("disconnect", async () => {
       if (USERID) {
         await User.findByIdAndUpdate(USERID, {
