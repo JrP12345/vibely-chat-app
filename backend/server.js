@@ -7,11 +7,14 @@ import { connectDB } from "./database/connectDB.js";
 import cors from "cors";
 import userRouter from "./routes/user.js";
 import { initSockets } from "./sockets/initSockets.js";
+import path from "path";
 dotenv.config();
 connectDB();
 
 const app = express();
 const httpServer = createServer(app);
+
+const _dirname = path.resolve();
 
 // middleware
 app.use(express.json());
@@ -32,6 +35,10 @@ const io = new Server(httpServer, {
 });
 initSockets(io);
 
+app.use(express.static(path.join(_dirname, "/frontend/build")));
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(_dirname, "frontend", "build", "index.html"));
+});
 // listening Server
 httpServer.listen(process.env.PORT, () => {
   console.log("Server is Running On PORT", process.env.PORT);
