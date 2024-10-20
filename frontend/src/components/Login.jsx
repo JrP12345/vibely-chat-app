@@ -15,7 +15,7 @@ const Login = ({ setPageToggle }) => {
     setLoading(true); // Set loading state
     try {
       const response = await axios.post(
-        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/login",
+        "https://vibely-chat-app-ytuu.onrender.com/api/user/login",
         {
           email,
           password,

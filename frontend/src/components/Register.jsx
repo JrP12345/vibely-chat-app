@@ -14,7 +14,7 @@ const Register = ({ setPageToggle }) => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/register",
+        "https://vibely-chat-app-ytuu.onrender.com/api/user/register",
         {
           username,
           email,

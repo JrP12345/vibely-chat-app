@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/userProfile",
+        "https://vibely-chat-app-ytuu.onrender.com/api/user/userProfile",
         {
           withCredentials: true,
         }
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/check",
+        "https://vibely-chat-app-ytuu.onrender.com/api/user/check",
         {
           withCredentials: true,
         }
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/users",
+        "https://vibely-chat-app-ytuu.onrender.com/api/user/users",
         {
           withCredentials: true,
         }
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.put(
-        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/update",
+        "https://vibely-chat-app-ytuu.onrender.com/api/user/update",
         { username: updatedUsername },
         { withCredentials: true }
       );
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/groups",
+        "https://vibely-chat-app-ytuu.onrender.com/api/user/groups",
         {
           withCredentials: true,
         }

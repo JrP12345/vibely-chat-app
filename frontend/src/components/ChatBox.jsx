@@ -3,7 +3,7 @@ import { IoSend } from "react-icons/io5";
 import io from "socket.io-client"; // Import should be at the top level
 import { useAuth } from "../context/AuthContext";
 
-const socket = io("https://vibely-chat-app-ytuu.onrender.com/auth"); // Update to your server's URL
+const socket = io("https://vibely-chat-app-ytuu.onrender.com"); // Update to your server's URL
 
 const ChatBox = ({ currentChat }) => {
   const [message, setMessage] = useState("");

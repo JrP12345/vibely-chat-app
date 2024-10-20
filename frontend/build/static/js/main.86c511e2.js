@@ -12582,7 +12582,7 @@
           c(!0);
           try {
             const { data: e } = await Gn.get(
-              "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/userProfile",
+              "https://vibely-chat-app-ytuu.onrender.com/api/user/userProfile",
               { withCredentials: !0 }
             );
             l(e), a(e._id);
@@ -12596,7 +12596,7 @@
           c(!0);
           try {
             const { data: e } = await Gn.get(
-              "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/check",
+              "https://vibely-chat-app-ytuu.onrender.com/api/user/check",
               { withCredentials: !0 }
             );
             e.isAuthenticated ? (r(!0), m()) : r(!1);
@@ -12610,7 +12610,7 @@
           c(!0);
           try {
             const { data: e } = await Gn.get(
-              "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/users",
+              "https://vibely-chat-app-ytuu.onrender.com/api/user/users",
               { withCredentials: !0 }
             );
             f(e.users);
@@ -12624,7 +12624,7 @@
           c(!0);
           try {
             const { data: e } = await Gn.get(
-              "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/groups",
+              "https://vibely-chat-app-ytuu.onrender.com/api/user/groups",
               { withCredentials: !0 }
             );
             h(e);
@@ -12653,7 +12653,7 @@
               c(!0);
               try {
                 const { data: t } = await Gn.put(
-                  "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/update",
+                  "https://vibely-chat-app-ytuu.onrender.com/api/user/update",
                   { username: e },
                   { withCredentials: !0 }
                 );
@@ -12717,7 +12717,7 @@
                   e.preventDefault(), p(""), l(!0);
                   try {
                     const e = await Gn.post(
-                      "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/login",
+                      "https://vibely-chat-app-ytuu.onrender.com/api/user/login",
                       { email: n, password: o },
                       { withCredentials: !0 }
                     );
@@ -12823,7 +12823,7 @@
                   try {
                     c(!0);
                     const e = await Gn.post(
-                      "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/register",
+                      "https://vibely-chat-app-ytuu.onrender.com/api/user/register",
                       { username: n, email: o, password: s },
                       { withCredentials: !0 }
                     );
@@ -15178,7 +15178,7 @@
     );
   }
   Object.assign(Co, { Manager: Eo, Socket: xo, io: Co, connect: Co });
-  const No = Co("https://vibely-chat-app-ytuu.onrender.com/auth"),
+  const No = Co("https://vibely-chat-app-ytuu.onrender.com"),
     Oo = (e) => {
       let { users: t, onSubmit: n, onClose: r } = e;
       const [o, a] = (0, i.useState)(""),
@@ -15210,7 +15210,7 @@
                     f(!0);
                     try {
                       const r = await Gn.post(
-                        "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/createGroup",
+                        "https://vibely-chat-app-ytuu.onrender.com/api/user/createGroup",
                         { groupName: e, members: t },
                         {
                           headers: { "Content-Type": "application/json" },
@@ -15531,7 +15531,7 @@
       ],
     })(e);
   }
-  const Ho = Co("https://vibely-chat-app-ytuu.onrender.com/auth"),
+  const Ho = Co("https://vibely-chat-app-ytuu.onrender.com"),
     Wo = (e) => {
       let { currentChat: t } = e;
       const [n, r] = (0, i.useState)(""),
@@ -15805,7 +15805,7 @@
                             onClick: async () => {
                               try {
                                 await Gn.post(
-                                  "https://vibely-chat-app-ytuu.onrender.com/auth/api/user/logout",
+                                  "https://vibely-chat-app-ytuu.onrender.com/api/user/logout",
                                   {},
                                   { withCredentials: !0 }
                                 );
