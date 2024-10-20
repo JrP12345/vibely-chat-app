@@ -3,12 +3,12 @@ import { User } from "../models/user.js";
 
 export const initSockets = (io) => {
   io.on("connection", (socket) => {
-    console.log("User Connected", socket.id);
+    // console.log("User Connected", socket.id);
     let USERID = "";
     socket.on("userJoin", async (userId) => {
       USERID = userId;
       await User.findByIdAndUpdate(userId, { status: "online" });
-      console.log(`User ${userId} is now online`);
+      // console.log(`User ${userId} is now online`);
     });
 
     const createPrivateRoomId = (userId1, userId2) => {
@@ -28,7 +28,7 @@ export const initSockets = (io) => {
         socket.emit("loadChatHistory", chat.chatHistory); // Send chat history to client
       }
 
-      console.log(`User ${socket.id} joined private room ${roomId}`);
+      // console.log(`User ${socket.id} joined private room ${roomId}`);
     });
 
     // Private chat: Send message and save to DB
@@ -41,7 +41,7 @@ export const initSockets = (io) => {
         const roomId = createPrivateRoomId(userId1, userId2);
 
         // Log the incoming message data for debugging
-        console.log("Incoming Message Data:", { userId1, userId2, message });
+        // console.log("Incoming Message Data:", { userId1, userId2, message });
 
         try {
           // Check for existing chat
@@ -77,9 +77,9 @@ export const initSockets = (io) => {
             timestamp: new Date(),
           });
 
-          console.log(
-            `Message from ${userId1} to ${userId2} in room ${roomId}`
-          );
+          // console.log(
+          //   `Message from ${userId1} to ${userId2} in room ${roomId}`
+          // );
 
           // Acknowledge success back to the sender
           if (callback) callback({ status: "success" });
@@ -104,7 +104,7 @@ export const initSockets = (io) => {
       }
 
       socket.join(groupId);
-      console.log(`${userId} joined the group chat: ${groupId}`);
+      // console.log(`${userId} joined the group chat: ${groupId}`);
       const chatHistoryWithUsernames = await Promise.all(
         groupChat.chatHistory.map(async (message) => {
           const sender = await User.findById(message.senderId);
@@ -166,7 +166,7 @@ export const initSockets = (io) => {
           status: "offline",
           lastLoginTime: new Date(), // Set the last login time
         });
-        console.log(`User ${userId} is now offline`);
+        // console.log(`User ${userId} is now offline`);
       }
     });
   });
